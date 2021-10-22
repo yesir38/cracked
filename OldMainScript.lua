@@ -1,108 +1,635 @@
-if shared.VapeExecuted then
-	return
-else
-	shared.VapeExecuted = true
-end
+repeat wait() until game:IsLoaded() == true
 
 local function GetURL(scripturl)
 	if shared.VapeDeveloper then
 		return readfile("vape/"..scripturl)
 	else
-		return game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/"..scripturl, true)
+		return game:HttpGet("https://github.com/yesir38/cracked/"..scripturl, true)
+	end
+end
+local getasset = getsynasset or getcustomasset
+if getasset == nil and getgenv().getcustomasset == nil then
+	getgenv().getcustomasset = function(location) return "rbxasset://"..location end
+	getasset = getgenv().getcustomasset
+end
+local queueteleport = syn and syn.queue_on_teleport or queue_on_teleport or fluxus and fluxus.queue_on_teleport
+local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
+
+local function checkpublicrepo(id)
+	local req = requestfunc({
+		Url = "https://github.com/yesir38/cracked/tree/main/CustomModules/"..id..".vape",
+		Method = "GET"
+	})
+	if req.StatusCode == 200 then
+		return req.Body
+	end
+	return nil
+end
+
+local function checkassetversion()
+	local req = requestfunc({
+		Url = "https://github.com/yesir38/cracked/blob/main/assetsversion.dat",
+		Method = "GET"
+	})
+	if req.StatusCode == 200 then
+		return req.Body
+	else
+		return nil
 	end
 end
 
-local GuiLibrary = loadstring(GetURL("OldGuiLibrary.lua"))()
+if not (getasset and requestfunc and queueteleport) then
+	print("Vape not supported with your exploit.")
+	return
+end
+
+if shared.VapeExecuted then
+	error("Vape Already Injected")
+	return
+else
+	shared.VapeExecuted = true
+end
+
+if isfolder("vape") == false then
+	makefolder("vape")
+end
+if isfile("vape/assetsversion.dat") == false then
+	writefile("vape/assetsversion.dat", "1")
+end
+if isfolder("vape/CustomModules") == false then
+	makefolder("vape/CustomModules")
+end
+if isfolder("vape/Profiles") == false then
+	makefolder("vape/Profiles")
+end
+local assetver = checkassetversion()
+if assetver and assetver > readfile("vape/assetsversion.dat") then
+	if shared.VapeDeveloper == nil then
+		if isfolder("vape/assets") then
+			if delfolder then
+				delfolder("vape/assets")
+			end
+		end
+		writefile("vape/assetsversion.dat", assetver)
+	end
+end
+if isfolder("vape/assets") == false then
+	makefolder("vape/assets")
+end
+
+local GuiLibrary = loadstring(GetURL("NewGuiLibrary.lua"))()
+
+local function getcustomassetfunc(path)
+	if not isfile(path) then
+		spawn(function()
+			local textlabel = Instance.new("TextLabel")
+			textlabel.Size = UDim2.new(1, 0, 0, 36)
+			textlabel.Text = "Downloading "..path
+			textlabel.BackgroundTransparency = 1
+			textlabel.TextStrokeTransparency = 0
+			textlabel.TextSize = 30
+			textlabel.Font = Enum.Font.SourceSans
+			textlabel.TextColor3 = Color3.new(1, 1, 1)
+			textlabel.Position = UDim2.new(0, 0, 0, -36)
+			textlabel.Parent = GuiLibrary["MainGui"]
+			repeat wait() until isfile(path)
+			textlabel:Remove()
+		end)
+		local req = requestfunc({
+			Url = "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/"..path:gsub("vape/assets", "assets"),
+			Method = "GET"
+		})
+		writefile(path, req.Body)
+	end
+	return getasset(path) 
+end
+
 shared.GuiLibrary = GuiLibrary
 local workspace = game:GetService("Workspace")
 local cam = workspace.CurrentCamera
 local selfdestruct = false
-local GUI = GuiLibrary.CreateWindow("GUI", "🖥", UDim2.new(0, 6, 0, 6), true)
-local Combat = GuiLibrary.CreateWindow("Combat", "⚔", UDim2.new(0, 177, 0, 6), false)
-local Blatant = GuiLibrary.CreateWindow("Blatant", "⚠", UDim2.new(0, 177, 0, 6), false)
-local Render = GuiLibrary.CreateWindow("Render", "👁", UDim2.new(0, 177, 0, 6), false)
-local Utility = GuiLibrary.CreateWindow("Utility", "🛠", UDim2.new(0, 177, 0, 6), false)
-local World = GuiLibrary.CreateWindow("World", "🌎", UDim2.new(0, 177, 0, 6), false)
-local Other = GuiLibrary.CreateWindow("Other", "❔", UDim2.new(0, 177, 0, 6), false)
-local Settings = GuiLibrary.CreateWindow("Settings", "⚙", UDim2.new(0, 177, 0, 6), false)
-local Friends = GuiLibrary.CreateWindow("Friends", "👨‍👦", UDim2.new(0, 177, 0, 6), false)
-local Search = GuiLibrary.CreateWindow("Search", "🔍", UDim2.new(0, 177, 0, 6), false)
-local TextGui = GuiLibrary.CreateCustomWindow("Text GUI", "📄", UDim2.new(0, 177, 0, 6), false)
+local GUI = GuiLibrary.CreateMainWindow()
+local Combat = GuiLibrary.CreateWindow({
+	["Name"] = "Combat", 
+	["Icon"] = "vape/assets/CombatIcon.png", 
+	["IconSize"] = 15
+})
+local Blatant = GuiLibrary.CreateWindow({
+	["Name"] = "Blatant", 
+	["Icon"] = "vape/assets/BlatantIcon.png", 
+	["IconSize"] = 16
+})
+local Render = GuiLibrary.CreateWindow({
+	["Name"] = "Render", 
+	["Icon"] = "vape/assets/RenderIcon.png", 
+	["IconSize"] = 17
+})
+local Utility = GuiLibrary.CreateWindow({
+	["Name"] = "Utility", 
+	["Icon"] = "vape/assets/UtilityIcon.png", 
+	["IconSize"] = 17
+})
+local World = GuiLibrary.CreateWindow({
+	["Name"] = "World", 
+	["Icon"] = "vape/assets/WorldIcon.png", 
+	["IconSize"] = 16
+})
+local Friends = GuiLibrary.CreateWindow2({
+	["Name"] = "Friends", 
+	["Icon"] = "vape/assets/FriendsIcon.png", 
+	["IconSize"] = 17
+})
+local Profiles = GuiLibrary.CreateWindow2({
+	["Name"] = "Profiles", 
+	["Icon"] = "vape/assets/ProfilesIcon.png", 
+	["IconSize"] = 19
+})
+GUI.CreateDivider()
+GUI.CreateButton({
+	["Name"] = "Combat", 
+	["Function"] = function(callback) Combat.SetVisible(callback) end, 
+	["Icon"] = "vape/assets/CombatIcon.png", 
+	["IconSize"] = 15
+})
+GUI.CreateButton({
+	["Name"] = "Blatant", 
+	["Function"] = function(callback) Blatant.SetVisible(callback) end, 
+	["Icon"] = "vape/assets/BlatantIcon.png", 
+	["IconSize"] = 16
+})
+GUI.CreateButton({
+	["Name"] = "Render", 
+	["Function"] = function(callback) Render.SetVisible(callback) end, 
+	["Icon"] = "vape/assets/RenderIcon.png", 
+	["IconSize"] = 17
+})
+GUI.CreateButton({
+	["Name"] = "Utility", 
+	["Function"] = function(callback) Utility.SetVisible(callback) end, 
+	["Icon"] = "vape/assets/UtilityIcon.png", 
+	["IconSize"] = 17
+})
+GUI.CreateButton({
+	["Name"] = "World", 
+	["Function"] = function(callback) World.SetVisible(callback) end, 
+	["Icon"] = "vape/assets/WorldIcon.png", 
+	["IconSize"] = 16
+})
+GUI.CreateDivider("MISC")
+GUI.CreateButton({
+	["Name"] = "Friends", 
+	["Function"] = function(callback) Friends.SetVisible(callback) end, 
+})
+GUI.CreateButton({
+	["Name"] = "Profiles", 
+	["Function"] = function(callback) Profiles.SetVisible(callback) end, 
+})
+local FriendsTextList = {["RefreshValues"] = function() end}
+local FriendsColor = {["Value"] = 0.44}
+FriendsTextList = Friends.CreateTextList({
+	["Name"] = "FriendsList", 
+	["TempText"] = "Username / Alias", 
+	["CustomFunction"] = function(obj)
+		obj.ItemText.TextColor3 = Color3.new(1, 1, 1)
+		local friendcircle = Instance.new("Frame")
+		friendcircle.Size = UDim2.new(0, 10, 0, 10)
+		friendcircle.Name = "FriendCircle"
+		friendcircle.BackgroundColor3 = Color3.fromHSV(FriendsColor["Value"], 0.7, 0.9)
+		friendcircle.BorderSizePixel = 0
+		friendcircle.Position = UDim2.new(0, 10, 0, 13)
+		friendcircle.Parent = obj
+		local friendcorner = Instance.new("UICorner")
+		friendcorner.CornerRadius = UDim.new(0, 8)
+		friendcorner.Parent = friendcircle
+		obj.ItemText.Position = UDim2.new(0, 36, 0, 0)
+		obj.ItemText.Size = UDim2.new(0, 157, 0, 33)
+	end
+})
+Friends.CreateToggle({
+	["Name"] = "Use Friends",
+	["Function"] = function(callback) end,
+	["Default"] = true
+})
+Friends.CreateToggle({
+	["Name"] = "Use Alias",
+	["Function"] = function(callback) end,
+	["Default"] = true,
+})
+Friends.CreateToggle({
+	["Name"] = "Spoof alias",
+	["Function"] = function(callback) end,
+})
+Friends.CreateToggle({
+	["Name"] = "Recolor visuals",
+	["Function"] = function(callback) end,
+	["Default"] = true
+})
+FriendsColor = Friends.CreateColorSlider({
+	["Name"] = "Friends Color", 
+	["Function"] = function(val) 
+		pcall(function()
+			FriendsTextList["Object"].AddBoxBKG.AddButton.ImageColor3 = Color3.fromHSV(val, 1, 1)
+		end)
+		for i, v in pairs(FriendsTextList["ScrollingObject"].ScrollingFrame:GetChildren()) do
+			pcall(function()
+				if v:IsA("TextButton") then
+					v.FriendCircle.BackgroundColor3 = Color3.fromHSV(val, 1, 1)
+				end
+			end)
+		end
+	end
+})
+local ProfilesTextList = {["RefreshValues"] = function() end}
+local profilesloaded = false
+ProfilesTextList = Profiles.CreateTextList({
+	["Name"] = "ProfilesList",
+	["TempText"] = "Type name", 
+	["AddFunction"] = function(user)
+		GuiLibrary["Profiles"][user] = {["Keybind"] = "", ["Selected"] = false}
+	end, 
+	["RemoveFunction"] = function(num) 
+		if #ProfilesTextList["ObjectList"] == 0 then
+			table.insert(ProfilesTextList["ObjectList"], "default")
+			ProfilesTextList["RefreshValues"](ProfilesTextList["ObjectList"])
+		end
+	end, 
+	["CustomFunction"] = function(obj, profilename) 
+		if GuiLibrary["Profiles"][profilename] == nil then
+			GuiLibrary["Profiles"][profilename] = {["Keybind"] = ""}
+		end
+		obj.MouseButton1Click:connect(function()
+			GuiLibrary["SwitchProfile"](profilename)
+		end)
+		local newsize = UDim2.new(0, 20, 0, 21)
+		local bindbkg = Instance.new("TextButton")
+		bindbkg.Text = ""
+		bindbkg.AutoButtonColor = false
+		bindbkg.Size = UDim2.new(0, 20, 0, 21)
+		bindbkg.Position = UDim2.new(1, -50, 0, 6)
+		bindbkg.BorderSizePixel = 0
+		bindbkg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		bindbkg.BackgroundTransparency = 0.95
+		bindbkg.Visible = GuiLibrary["Profiles"][profilename]["Keybind"] ~= ""
+		bindbkg.Parent = obj
+		local bindimg = Instance.new("ImageLabel")
+		bindimg.Image = getcustomassetfunc("vape/assets/KeybindIcon.png")
+		bindimg.BackgroundTransparency = 1
+		bindimg.Size = UDim2.new(0, 12, 0, 12)
+		bindimg.Position = UDim2.new(0, 4, 0, 5)
+		bindimg.ImageTransparency = 0.2
+		bindimg.Active = false
+		bindimg.Visible = (GuiLibrary["Profiles"][profilename]["Keybind"] == "")
+		bindimg.Parent = bindbkg
+		local bindtext = Instance.new("TextLabel")
+		bindtext.Active = false
+		bindtext.BackgroundTransparency = 1
+		bindtext.TextSize = 16
+		bindtext.Parent = bindbkg
+		bindtext.Font = Enum.Font.SourceSans
+		bindtext.Size = UDim2.new(1, 0, 1, 0)
+		bindtext.TextColor3 = Color3.fromRGB(85, 85, 85)
+		bindtext.Visible = (GuiLibrary["Profiles"][profilename]["Keybind"] ~= "")
+		local bindtext2 = Instance.new("TextLabel")
+		bindtext2.Text = "PRESS A KEY TO BIND"
+		bindtext2.Size = UDim2.new(0, 150, 0, 33)
+		bindtext2.Font = Enum.Font.SourceSans
+		bindtext2.TextSize = 17
+		bindtext2.TextColor3 = Color3.fromRGB(201, 201, 201)
+		bindtext2.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
+		bindtext2.BorderSizePixel = 0
+		bindtext2.Visible = false
+		bindtext2.Parent = obj
+		local bindround = Instance.new("UICorner")
+		bindround.CornerRadius = UDim.new(0, 4)
+		bindround.Parent = bindbkg
+		bindbkg.MouseButton1Click:connect(function()
+			if GuiLibrary["KeybindCaptured"] == false then
+				GuiLibrary["KeybindCaptured"] = true
+				spawn(function()
+					bindtext2.Visible = true
+					repeat wait() until GuiLibrary["PressedKeybindKey"] ~= ""
+					local key = (GuiLibrary["PressedKeybindKey"] == GuiLibrary["Profiles"][profilename]["Keybind"] and "" or GuiLibrary["PressedKeybindKey"])
+					if key == "" then
+						GuiLibrary["Profiles"][profilename]["Keybind"] = key
+						newsize = UDim2.new(0, 20, 0, 21)
+						bindbkg.Size = newsize
+						bindbkg.Visible = true
+						bindbkg.Position = UDim2.new(1, -(30 + newsize.X.Offset), 0, 6)
+						bindimg.Visible = true
+						bindtext.Visible = false
+						bindtext.Text = key
+					else
+						local textsize = game:GetService("TextService"):GetTextSize(key, 16, bindtext.Font, Vector2.new(99999, 99999))
+						newsize = UDim2.new(0, 13 + textsize.X, 0, 21)
+						GuiLibrary["Profiles"][profilename]["Keybind"] = key
+						bindbkg.Visible = true
+						bindbkg.Size = newsize
+						bindbkg.Position = UDim2.new(1, -(30 + newsize.X.Offset), 0, 6)
+						bindimg.Visible = false
+						bindtext.Visible = true
+						bindtext.Text = key
+					end
+					GuiLibrary["PressedKeybindKey"] = ""
+					GuiLibrary["KeybindCaptured"] = false
+					bindtext2.Visible = false
+				end)
+			end
+		end)
+		bindbkg.MouseEnter:connect(function() 
+			bindimg.Image = getcustomassetfunc("vape/assets/PencilIcon.png") 
+			bindimg.Visible = true
+			bindtext.Visible = false
+			bindbkg.Size = UDim2.new(0, 20, 0, 21)
+			bindbkg.Position = UDim2.new(1, -50, 0, 6)
+		end)
+		bindbkg.MouseLeave:connect(function() 
+			bindimg.Image = getcustomassetfunc("vape/assets/KeybindIcon.png")
+			if GuiLibrary["Profiles"][profilename]["Keybind"] ~= "" then
+				bindimg.Visible = false
+				bindtext.Visible = true
+				bindbkg.Size = newsize
+				bindbkg.Position = UDim2.new(1, -(30 + newsize.X.Offset), 0, 6)
+			end
+		end)
+		obj.MouseEnter:connect(function()
+			bindbkg.Visible = true
+		end)
+		obj.MouseLeave:connect(function()
+			bindbkg.Visible = GuiLibrary["Profiles"][profilename]["Keybind"] ~= ""
+		end)
+		if GuiLibrary["Profiles"][profilename]["Keybind"] ~= "" then
+
+			bindtext.Text = GuiLibrary["Profiles"][profilename]["Keybind"]
+			local textsize = game:GetService("TextService"):GetTextSize(GuiLibrary["Profiles"][profilename]["Keybind"], 16, bindtext.Font, Vector2.new(99999, 99999))
+			newsize = UDim2.new(0, 13 + textsize.X, 0, 21)
+			bindbkg.Size = newsize
+			bindbkg.Position = UDim2.new(1, -(30 + newsize.X.Offset), 0, 6)
+		end
+		if profilename == GuiLibrary["CurrentProfile"] then
+			obj.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+			obj.ImageButton.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+			obj.ItemText.TextColor3 = Color3.new(1, 1, 1)
+			obj.ItemText.TextStrokeTransparency = 0.75
+			bindbkg.BackgroundTransparency = 0.9
+			bindtext.TextColor3 = Color3.fromRGB(214, 214, 214)
+		end
+	end
+})
+local OnlineProfilesButton = Instance.new("TextButton")
+OnlineProfilesButton.Name = "OnlineProfilesButton"
+OnlineProfilesButton.LayoutOrder = 1
+OnlineProfilesButton.AutoButtonColor = false
+OnlineProfilesButton.Size = UDim2.new(0, 45, 0, 29)
+OnlineProfilesButton.BackgroundColor3 = Color3.fromRGB(26, 25, 26)
+OnlineProfilesButton.Active = false
+OnlineProfilesButton.Text = ""
+OnlineProfilesButton.ZIndex = 4
+OnlineProfilesButton.Font = Enum.Font.SourceSans
+OnlineProfilesButton.TextXAlignment = Enum.TextXAlignment.Left
+OnlineProfilesButton.Position = UDim2.new(0, 166, 0, 6)
+OnlineProfilesButton.Parent = ProfilesTextList["Object"]
+local OnlineProfilesButtonBKG = Instance.new("Frame")
+OnlineProfilesButtonBKG.BackgroundColor3 = Color3.fromRGB(38, 37, 38)
+OnlineProfilesButtonBKG.Size = UDim2.new(0, 47, 0, 31)
+OnlineProfilesButtonBKG.Position = UDim2.new(0, 165, 0, 5)
+OnlineProfilesButtonBKG.ZIndex = 3
+OnlineProfilesButtonBKG.Parent = ProfilesTextList["Object"]
+local OnlineProfilesButtonImage = Instance.new("ImageLabel")
+OnlineProfilesButtonImage.BackgroundTransparency = 1
+OnlineProfilesButtonImage.Position = UDim2.new(0, 14, 0, 7)
+OnlineProfilesButtonImage.Size = UDim2.new(0, 17, 0, 16)
+OnlineProfilesButtonImage.Image = getcustomassetfunc("vape/assets/OnlineProfilesButton.png")
+OnlineProfilesButtonImage.ImageColor3 = Color3.fromRGB(121, 121, 121)
+OnlineProfilesButtonImage.ZIndex = 5
+OnlineProfilesButtonImage.Active = false
+OnlineProfilesButtonImage.Parent = OnlineProfilesButton
+local OnlineProfilesbuttonround1 = Instance.new("UICorner")
+OnlineProfilesbuttonround1.CornerRadius = UDim.new(0, 5)
+OnlineProfilesbuttonround1.Parent = OnlineProfilesButton
+local OnlineProfilesbuttonround2 = Instance.new("UICorner")
+OnlineProfilesbuttonround2.CornerRadius = UDim.new(0, 5)
+OnlineProfilesbuttonround2.Parent = OnlineProfilesButtonBKG
+local OnlineProfilesFrame = Instance.new("Frame")
+OnlineProfilesFrame.Size = UDim2.new(0, 660, 0, 445)
+OnlineProfilesFrame.Position = UDim2.new(0.5, -330, 0.5, -223)
+OnlineProfilesFrame.BackgroundColor3 = Color3.fromRGB(26, 25, 26)
+OnlineProfilesFrame.Parent = GuiLibrary["MainGui"].OnlineProfiles
+local OnlineProfilesFrameShadow = Instance.new("ImageLabel")
+OnlineProfilesFrameShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+OnlineProfilesFrameShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+OnlineProfilesFrameShadow.Image = getcustomassetfunc("vape/assets/WindowBlur.png")
+OnlineProfilesFrameShadow.BackgroundTransparency = 1
+OnlineProfilesFrameShadow.ZIndex = -1
+OnlineProfilesFrameShadow.Size = UDim2.new(1, 6, 1, 6)
+OnlineProfilesFrameShadow.ImageColor3 = Color3.new(0, 0, 0)
+OnlineProfilesFrameShadow.ScaleType = Enum.ScaleType.Slice
+OnlineProfilesFrameShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+OnlineProfilesFrameShadow.Parent = OnlineProfilesFrame
+local OnlineProfilesFrameIcon = Instance.new("ImageLabel")
+OnlineProfilesFrameIcon.Size = UDim2.new(0, 19, 0, 16)
+OnlineProfilesFrameIcon.Image = getcustomassetfunc("vape/assets/ProfilesIcon.png")
+OnlineProfilesFrameIcon.Name = "WindowIcon"
+OnlineProfilesFrameIcon.BackgroundTransparency = 1
+OnlineProfilesFrameIcon.Position = UDim2.new(0, 10, 0, 13)
+OnlineProfilesFrameIcon.ImageColor3 = Color3.fromRGB(200, 200, 200)
+OnlineProfilesFrameIcon.Parent = OnlineProfilesFrame
+local OnlineProfilesFrameText = Instance.new("TextLabel")
+OnlineProfilesFrameText.Size = UDim2.new(0, 155, 0, 41)
+OnlineProfilesFrameText.BackgroundTransparency = 1
+OnlineProfilesFrameText.Name = "WindowTitle"
+OnlineProfilesFrameText.Position = UDim2.new(0, 36, 0, 0)
+OnlineProfilesFrameText.TextXAlignment = Enum.TextXAlignment.Left
+OnlineProfilesFrameText.Font = Enum.Font.SourceSans
+OnlineProfilesFrameText.TextSize = 17
+OnlineProfilesFrameText.Text = "Profiles"
+OnlineProfilesFrameText.TextColor3 = Color3.fromRGB(201, 201, 201)
+OnlineProfilesFrameText.Parent = OnlineProfilesFrame
+local OnlineProfilesFrameText2 = Instance.new("TextLabel")
+OnlineProfilesFrameText2.TextSize = 15
+OnlineProfilesFrameText2.TextColor3 = Color3.fromRGB(85, 84, 85)
+OnlineProfilesFrameText2.Text = "YOUR PROFILES"
+OnlineProfilesFrameText2.Font = Enum.Font.SourceSans
+OnlineProfilesFrameText2.BackgroundTransparency = 1
+OnlineProfilesFrameText2.TextXAlignment = Enum.TextXAlignment.Left
+OnlineProfilesFrameText2.TextYAlignment = Enum.TextYAlignment.Top
+OnlineProfilesFrameText2.Size = UDim2.new(1, 0, 0, 20)
+OnlineProfilesFrameText2.Position = UDim2.new(0, 10, 0, 48)
+OnlineProfilesFrameText2.Parent = OnlineProfilesFrame
+local OnlineProfilesFrameText3 = Instance.new("TextLabel")
+OnlineProfilesFrameText3.TextSize = 15
+OnlineProfilesFrameText3.TextColor3 = Color3.fromRGB(85, 84, 85)
+OnlineProfilesFrameText3.Text = "PUBLIC PROFILES"
+OnlineProfilesFrameText3.Font = Enum.Font.SourceSans
+OnlineProfilesFrameText3.BackgroundTransparency = 1
+OnlineProfilesFrameText3.TextXAlignment = Enum.TextXAlignment.Left
+OnlineProfilesFrameText3.TextYAlignment = Enum.TextYAlignment.Top
+OnlineProfilesFrameText3.Size = UDim2.new(1, 0, 0, 20)
+OnlineProfilesFrameText3.Position = UDim2.new(0, 231, 0, 48)
+OnlineProfilesFrameText3.Parent = OnlineProfilesFrame
+local OnlineProfilesBorder1 = Instance.new("Frame")
+OnlineProfilesBorder1.BackgroundColor3 = Color3.fromRGB(40, 39, 40)
+OnlineProfilesBorder1.BorderSizePixel = 0
+OnlineProfilesBorder1.Size = UDim2.new(1, 0, 0, 1)
+OnlineProfilesBorder1.Position = UDim2.new(0, 0, 0, 41)
+OnlineProfilesBorder1.Parent = OnlineProfilesFrame
+local OnlineProfilesBorder2 = Instance.new("Frame")
+OnlineProfilesBorder2.BackgroundColor3 = Color3.fromRGB(40, 39, 40)
+OnlineProfilesBorder2.BorderSizePixel = 0
+OnlineProfilesBorder2.Size = UDim2.new(0, 1, 1, -41)
+OnlineProfilesBorder2.Position = UDim2.new(0, 220, 0, 41)
+OnlineProfilesBorder2.Parent = OnlineProfilesFrame
+local OnlineProfilesList = Instance.new("ScrollingFrame")
+OnlineProfilesList.BackgroundTransparency = 1
+OnlineProfilesList.Size = UDim2.new(0, 408, 0, 319)
+OnlineProfilesList.Position = UDim2.new(0, 230, 0, 122)
+OnlineProfilesList.CanvasSize = UDim2.new(0, 408, 0, 319)
+OnlineProfilesList.Parent = OnlineProfilesFrame
+local OnlineProfilesListGrid = Instance.new("UIGridLayout")
+OnlineProfilesListGrid.CellSize = UDim2.new(0, 134, 0, 144)
+OnlineProfilesListGrid.CellPadding = UDim2.new(0, 4, 0, 4)
+OnlineProfilesListGrid.Parent = OnlineProfilesList
+local OnlineProfilesFrameCorner = Instance.new("UICorner")
+OnlineProfilesFrameCorner.CornerRadius = UDim.new(0, 4)
+OnlineProfilesFrameCorner.Parent = OnlineProfilesFrame
+OnlineProfilesButton.MouseButton1Click:connect(function()
+	GuiLibrary["MainGui"].OnlineProfiles.Visible = true
+	GuiLibrary["MainGui"].ClickGui.Visible = false
+	if profilesloaded == false then
+		local onlineprofiles = {}
+		local success, result = pcall(function()
+			return game:GetService("HttpService"):JSONDecode((shared.VapeDeveloper and readfile("vape/OnlineProfiles.vapeonline") or game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/OnlineProfiles.vapeonline", true)))
+		end)
+		onlineprofiles = (success and result or {})
+		for i2,v2 in pairs(onlineprofiles) do
+			if v2["ProfileGame"] == game.PlaceId then
+				local profilebox = Instance.new("Frame")
+				profilebox.BackgroundColor3 = Color3.fromRGB(31, 30, 31)
+				profilebox.Parent = OnlineProfilesList
+				local profiletext = Instance.new("TextLabel")
+				profiletext.TextSize = 15
+				profiletext.TextColor3 = Color3.fromRGB(137, 136, 137)
+				profiletext.Size = UDim2.new(0, 100, 0, 20)
+				profiletext.Position = UDim2.new(0, 18, 0, 25)
+				profiletext.Font = Enum.Font.SourceSans
+				profiletext.TextXAlignment = Enum.TextXAlignment.Left
+				profiletext.TextYAlignment = Enum.TextYAlignment.Top
+				profiletext.BackgroundTransparency = 1
+				profiletext.Text = i2
+				profiletext.Parent = profilebox
+				local profiledownload = Instance.new("TextButton")
+				profiledownload.BackgroundColor3 = Color3.fromRGB(31, 30, 31)
+				profiledownload.Size = UDim2.new(0, 69, 0, 31)
+				profiledownload.Font = Enum.Font.SourceSans
+				profiledownload.TextColor3 = Color3.fromRGB(200, 200, 200)
+				profiledownload.TextSize = 15
+				profiledownload.AutoButtonColor = false
+				profiledownload.Text = "DOWNLOAD"
+				profiledownload.Position = UDim2.new(0, 14, 0, 96)
+				profiledownload.Visible = false 
+				profiledownload.Parent = profilebox
+				profiledownload.ZIndex = 2
+				local profiledownloadbkg = Instance.new("Frame")
+				profiledownloadbkg.Size = UDim2.new(0, 71, 0, 33)
+				profiledownloadbkg.BackgroundColor3 = Color3.fromRGB(42, 41, 42)
+				profiledownloadbkg.Position = UDim2.new(0, 13, 0, 95)
+				profiledownloadbkg.ZIndex = 1
+				profiledownloadbkg.Visible = false
+				profiledownloadbkg.Parent = profilebox
+				profilebox.MouseEnter:connect(function()
+					profiletext.TextColor3 = Color3.fromRGB(200, 200, 200)
+					profiledownload.Visible = true 
+					profiledownloadbkg.Visible = true
+				end)
+				profilebox.MouseLeave:connect(function()
+					profiletext.TextColor3 = Color3.fromRGB(137, 136, 137)
+					profiledownload.Visible = false
+					profiledownloadbkg.Visible = false
+				end)
+				profiledownload.MouseEnter:connect(function()
+					profiledownload.BackgroundColor3 = Color3.fromRGB(5, 134, 105)
+				end)
+				profiledownload.MouseLeave:connect(function()
+					profiledownload.BackgroundColor3 = Color3.fromRGB(31, 30, 31)
+				end)
+				profiledownload.MouseButton1Click:connect(function()
+					writefile("vape/Profiles/"..v2["ProfileName"]..tostring(game.PlaceId)..".vapeprofile", (shared.VapeDeveloper and readfile("vape/OnlineProfiles/"..v2["OnlineProfileName"]) or game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/OnlineProfiles/"..v2["OnlineProfileName"], true)))
+					GuiLibrary["Profiles"][v2["ProfileName"]] = {["Keybind"] = "", ["Selected"] = false}
+					if table.find(ProfilesTextList["ObjectList"], v2["ProfileName"]) == nil then
+						table.insert(ProfilesTextList["ObjectList"], v2["ProfileName"])
+					end
+					ProfilesTextList["RefreshValues"](ProfilesTextList["ObjectList"])
+				end)
+				local profileround = Instance.new("UICorner")
+				profileround.CornerRadius = UDim.new(0, 4)
+				profileround.Parent = profilebox
+				local profileround2 = Instance.new("UICorner")
+				profileround2.CornerRadius = UDim.new(0, 4)
+				profileround2.Parent = profiledownload
+				local profileround3 = Instance.new("UICorner")
+				profileround3.CornerRadius = UDim.new(0, 4)
+				profileround3.Parent = profiledownloadbkg
+			end
+		end
+		profilesloaded = true
+	end
+end)
+
+GUI.CreateDivider()
+---GUI.CreateCustomButton("Favorites", "vape/assets/FavoritesListIcon.png", UDim2.new(0, 17, 0, 14), function() end, function() end)
+--GUI.CreateCustomButton("Text GUIVertical", "vape/assets/TextGUIIcon3.png", UDim2.new(1, -56, 0, 15), function() end, function() end)
+local TextGui = GuiLibrary.CreateCustomWindow({
+	["Name"] = "Text GUI", 
+	["Icon"] = "vape/assets/TextGUIIcon1.png", 
+	["IconSize"] = 21
+})
+--GUI.CreateCustomButton("Text GUI", "vape/assets/TextGUIIcon2.png", UDim2.new(1, -23, 0, 15), function() TextGui.SetVisible(true) end, function() TextGui.SetVisible(false) end, "OptionsButton")
+GUI.CreateCustomToggle({
+	["Name"] = "Text GUI", 
+	["Icon"] = "vape/assets/TextGUIIcon3.png",
+	["Function"] = function(callback) TextGui.SetVisible(callback) end,
+	["Priority"] = 2
+})	
 
 local rainbowval = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, 1)), ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 0, 1))})
 local rainbowval2 = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, 0.42)), ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 0, 0.42))})
 local rainbowval3 = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, 1)), ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 0, 1))})
 local guicolorslider = {["RainbowValue"] = false}
-spawn(function()
-	local counter = 0
-	local w = math.pi / 12
-	local CS = {}
-	local CS2 = {}
-	local CS3 = {}
-	--4
-	local num = 4 
-	local frames = 0
-	repeat
-		wait()
-		if guicolorslider["RainbowValue"] then
-			if math.fmod(frames, 2) == 0 then
-				for i = 0, num do
-					local c = Color3.fromRGB(127 * math.sin(w*i + counter) + 128, 127 * math.sin(w*i + 2 * math.pi/3 + counter) + 128, 127*math.sin(w*i + 4*math.pi/3 + counter) + 128)
-					table.insert(CS, i+1, ColorSequenceKeypoint.new(i/num, c))
-					local h, s, v = c:ToHSV()
-					local str = tostring(h + 0.12)
-					local newcol = tonumber("0"..string.sub(str, 2, string.len(str)))
-					table.insert(CS2, i+1, ColorSequenceKeypoint.new(i/num, Color3.fromHSV(newcol, s, 0.42)))
-					table.insert(CS3, i+1, ColorSequenceKeypoint.new(i/num, Color3.fromHSV(newcol, s, v)))
-				end
-				rainbowval = ColorSequence.new(CS)
-				rainbowval2 = ColorSequence.new(CS2)
-				rainbowval3 = ColorSequence.new(CS3)
-				pcall(function()
-					TextGui.GetCustomChildren().Logo.Gradient.Color = rainbowval
-					TextGui.GetCustomChildren().Logo.ImageLabel.Gradient.Color = rainbowval
-					TextGui.GetCustomChildren().TextLabel.Gradient.Color = rainbowval3
-					TextGui.GetCustomChildren().TextLabel.TextLabel.Gradient.Color = rainbowval2
-				end)
-				CS = {}
-				CS2 = {}
-				CS3 = {}
-				counter = counter + math.pi/40
-				if (counter >= math.pi * 2) then
-					counter = 0
-				end
-			end
-			if frames >= 1000 then
-				frames = 0
-			end
-			frames = frames + 2
-		end
-	until selfdestruct
-end)
 
 local onething = Instance.new("ImageLabel")
 onething.Parent = TextGui.GetCustomChildren()
 onething.Name = "Logo"
-onething.Size = UDim2.new(0, 77, 0, 32)
-onething.Position = UDim2.new(1, -154, 0, 3)
+onething.Size = UDim2.new(0, 100, 0, 27)
+onething.Position = UDim2.new(1, -140, 0, 3)
 onething.BackgroundColor3 = Color3.new(0, 0, 0)
 onething.BorderSizePixel = 0
 onething.BackgroundTransparency = 1
 onething.Visible = false
-onething.Image = "http://www.roblox.com/asset/?id=5093061259"
+onething.Image = getcustomassetfunc("vape/assets/VapeLogo3.png")
 local onething2 = Instance.new("ImageLabel")
 onething2.Parent = onething
-onething2.Size = UDim2.new(0, 77, 0, 32)
-onething2.Position = UDim2.new(1, 0, 0, 0)
+onething2.Size = UDim2.new(0, 41, 0, 24)
+onething2.Name = "Logo2"
+onething2.Position = UDim2.new(1, 0, 0, 1)
 onething2.BorderSizePixel = 0
 onething2.BackgroundColor3 = Color3.new(0, 0, 0)
 onething2.BackgroundTransparency = 1
-onething2.Image = "http://www.roblox.com/asset/?id=5093114878"
+onething2.Image = getcustomassetfunc("vape/assets/VapeLogo4.png")
+local onething3 = onething:Clone()
+onething3.ImageColor3 = Color3.new(0, 0, 0)
+onething3.ImageTransparency = 0.5
+onething3.ZIndex = 0
+onething3.Position = UDim2.new(0, 1, 0, 1)
+onething3.Visible = false
+onething3.Parent = onething
+onething3.Logo2.ImageColor3 = Color3.new(0, 0, 0)
+onething3.Logo2.ZIndex = 0
+onething3.Logo2.ImageTransparency = 0.5
 local onetext = Instance.new("TextLabel")
 onetext.Parent = TextGui.GetCustomChildren()
 onetext.Size = UDim2.new(1, 0, 1, 0)
 onetext.Position = UDim2.new(1, -154, 0, 35)
 onetext.TextColor3 = Color3.new(1, 1, 1)
+onetext.RichText = true
 onetext.BackgroundTransparency = 1
 onetext.TextXAlignment = Enum.TextXAlignment.Left
 onetext.TextYAlignment = Enum.TextYAlignment.Top
@@ -126,7 +653,6 @@ onetext2.TextXAlignment = Enum.TextXAlignment.Left
 onetext2.TextYAlignment = Enum.TextYAlignment.Top
 onetext2.TextColor3 = Color3.new(0, 0, 0)
 onetext2.Font = Enum.Font.SourceSans
-onetext:GetPropertyChangedSignal("Text"):connect(function() onetext2.Text = onetext.Text end)
 onetext2.TextSize = 20
 local onetext3 = onetext:Clone()
 onetext3.Name = "ExtraText"
@@ -137,36 +663,33 @@ local onetext4 = onetext3.ExtraText
 onetext4.TextColor3 = Color3.new(0, 0, 0)
 onetext4.TextTransparency = 0.5
 onetext3:GetPropertyChangedSignal("Text"):connect(function() onetext4.Text = onetext3.Text end)
-for i2,v2 in pairs(TextGui.GetCustomChildren():GetDescendants()) do
-	if v2.Name ~= "ExtraText" then
-		local gradient = Instance.new("UIGradient")
-		gradient.Rotation = 270
-		gradient.Name = "Gradient"
-		gradient.Parent = v2
-	end
-end
 TextGui.GetCustomChildren().Parent:GetPropertyChangedSignal("Position"):connect(function()
 	if (TextGui.GetCustomChildren().Parent.Position.X.Offset + TextGui.GetCustomChildren().Parent.Size.X.Offset / 2) >= (cam.ViewportSize.X / 2) then
 		onetext.TextXAlignment = Enum.TextXAlignment.Right
 		onetext2.TextXAlignment = Enum.TextXAlignment.Right
 		onetext3.TextXAlignment = Enum.TextXAlignment.Right
 		onetext4.TextXAlignment = Enum.TextXAlignment.Right
-		onething.Position = UDim2.new(1, -154, 0, 3)
-		onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 3))
+		onetext2.Position = UDim2.new(0, 1, 0, 1)
+		onething.Position = UDim2.new(1, -142, 0, 8)
+		onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 5))
 	else
 		onetext.TextXAlignment = Enum.TextXAlignment.Left
 		onetext2.TextXAlignment = Enum.TextXAlignment.Left
+		onetext2.Position = UDim2.new(0, 4, 0, 1)
 		onetext3.TextXAlignment = Enum.TextXAlignment.Left
 		onetext4.TextXAlignment = Enum.TextXAlignment.Left
-		onething.Position = UDim2.new(0, 3, 0, 3)
-		onetext.Position = UDim2.new(0, 3, 0, (onething.Visible and 35 or 3))
+		onething.Position = UDim2.new(0, 2, 0, 8)
+		onetext.Position = UDim2.new(0, 6, 0, (onething.Visible and 35 or 5))
 	end
 end)
 
+onething.Visible = true onetext.Position = UDim2.new(0, 0, 0, 35)
+
 local sortingmethod = "Alphabetical"
+local textwithoutthing = ""
 local function getSpaces(str)
-	local strSize = game:GetService("TextService"):GetTextSize(str, 20, Enum.Font.SourceSans, Vector2.new(10000, 10000))
-	return math.ceil(strSize.X / 3)
+		local strSize = game:GetService("TextService"):GetTextSize(str, 20, Enum.Font.SourceSans, Vector2.new(10000, 10000))
+		return math.ceil(strSize.X / 3)
 end
 local function UpdateHud()
 	local text = ""
@@ -183,6 +706,8 @@ local function UpdateHud()
 	end
 	if sortingmethod == "Alphabetical" then
 		table.sort(tableofmodules, function(a, b) return a["Text"]:lower() < b["Text"]:lower() end)
+	else
+		table.sort(tableofmodules, function(a, b) return a["Text"]:len() + (a["ExtraText"] and a["ExtraText"]():len() or 0) > b["Text"]:len() + (b["ExtraText"] and b["ExtraText"]():len() or 0) end)
 	end
 	for i2,v2 in pairs(tableofmodules) do
 		if first then
@@ -194,301 +719,591 @@ local function UpdateHud()
 			text2 = text2..'\n'..string.rep(" ", getSpaces(v2["Text"]))..v2["ExtraText"]()
 		end
 	end
+	textwithoutthing = text
 	onetext.Text = text
+	onetext2.Text = text
 	onetext3.Text = text2
 	local newsize = game:GetService("TextService"):GetTextSize(text, onetext.TextSize, onetext.Font, Vector2.new(1000000, 1000000))
 	onetext.Size = UDim2.new(0, 154, 0, newsize.Y)
 	onetext3.Size = UDim2.new(0, 154, 0, newsize.Y)
-	if (TextGui.GetCustomChildren().Parent.Position.X.Offset + TextGui.GetCustomChildren().Parent.Size.X.Offset / 2) >= (cam.ViewportSize.X / 2) then
-		onetext.TextXAlignment = Enum.TextXAlignment.Right
-		onetext2.TextXAlignment = Enum.TextXAlignment.Right
-		onetext3.TextXAlignment = Enum.TextXAlignment.Right
-		onetext4.TextXAlignment = Enum.TextXAlignment.Right
-		onething.Position = UDim2.new(1, -154, 0, 3)
-		onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 3))
-	else
-		onetext.TextXAlignment = Enum.TextXAlignment.Left
-		onetext2.TextXAlignment = Enum.TextXAlignment.Left
-		onetext3.TextXAlignment = Enum.TextXAlignment.Left
-		onetext4.TextXAlignment = Enum.TextXAlignment.Left
-		onething.Position = UDim2.new(0, 3, 0, 3)
-		onetext.Position = UDim2.new(0, 3, 0, (onething.Visible and 35 or 3))
+	if TextGui.GetCustomChildren().Parent then
+		if (TextGui.GetCustomChildren().Parent.Position.X.Offset + TextGui.GetCustomChildren().Parent.Size.X.Offset / 2) >= (cam.ViewportSize.X / 2) then
+			onetext.TextXAlignment = Enum.TextXAlignment.Right
+			onetext2.Position = UDim2.new(0, 1, 0, 1)
+			onetext2.TextXAlignment = Enum.TextXAlignment.Right
+			onetext3.TextXAlignment = Enum.TextXAlignment.Right
+			onetext4.TextXAlignment = Enum.TextXAlignment.Right
+			onething.Position = UDim2.new(1, -142, 0, 8)
+			onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 5))
+		else
+			onetext.TextXAlignment = Enum.TextXAlignment.Left
+			onetext2.TextXAlignment = Enum.TextXAlignment.Left
+			onetext2.Position = UDim2.new(0, 4, 0, 1)
+			onetext3.TextXAlignment = Enum.TextXAlignment.Left
+			onetext4.TextXAlignment = Enum.TextXAlignment.Left
+			onething.Position = UDim2.new(0, 2, 0, 8)
+			onetext.Position = UDim2.new(0, 6, 0, (onething.Visible and 35 or 5))
+		end
 	end
 end
 
 GuiLibrary["UpdateHudEvent"].Event:connect(UpdateHud)
+TextGui.CreateDropdown({
+	["Name"] = "Sort",
+	["List"] = {"Alphabetical", "Length"},
+	["Function"] = function(val)
+		sortingmethod = val
+		GuiLibrary["UpdateHudEvent"]:Fire()
+	end
+})
+TextGui.CreateToggle({
+	["Name"] = "Shadow", 
+	["Function"] = function(callback) onetext2.Visible = callback onetext4.Visible = callback onething3.Visible = callback end
+})
+local TextGuiUseCategoryColor = TextGui.CreateToggle({
+	["Name"] = "Use Category Color", 
+	["Function"] = function(callback) end
+})
+TextGui.CreateToggle({
+	["Name"] = "Watermark", 
+	["Function"] = function(callback) 
+		if callback then
+			onething.Visible = true 
+			if (TextGui.GetCustomChildren().Parent.Position.X.Offset + TextGui.GetCustomChildren().Parent.Size.X.Offset / 2) >= (cam.ViewportSize.X / 2) then
+				onetext.TextXAlignment = Enum.TextXAlignment.Right
+				onetext2.TextXAlignment = Enum.TextXAlignment.Right
+				onetext2.Position = UDim2.new(0, 1, 0, 1)
+				onetext3.TextXAlignment = Enum.TextXAlignment.Right
+				onetext4.TextXAlignment = Enum.TextXAlignment.Right
+				onething.Position = UDim2.new(1, -142, 0, 8)
+				onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 5))
+			else
+				onetext.TextXAlignment = Enum.TextXAlignment.Left
+				onetext2.TextXAlignment = Enum.TextXAlignment.Left
+				onetext2.Position = UDim2.new(0, 4, 0, 1)
+				onetext3.TextXAlignment = Enum.TextXAlignment.Left
+				onetext4.TextXAlignment = Enum.TextXAlignment.Left
+				onething.Position = UDim2.new(0, 2, 0, 8)
+				onetext.Position = UDim2.new(0, 6, 0, (onething.Visible and 35 or 5))
+			end
+		else
+			onething.Visible = false
+			if (TextGui.GetCustomChildren().Parent.Position.X.Offset + TextGui.GetCustomChildren().Parent.Size.X.Offset / 2) >= (cam.ViewportSize.X / 2) then
+				onetext.TextXAlignment = Enum.TextXAlignment.Right
+				onetext2.TextXAlignment = Enum.TextXAlignment.Right
+				onetext2.Position = UDim2.new(0, 1, 0, 1)
+				onetext3.TextXAlignment = Enum.TextXAlignment.Right
+				onetext4.TextXAlignment = Enum.TextXAlignment.Right
+				onething.Position = UDim2.new(1, -142, 0, 8)
+				onetext.Position = UDim2.new(1, -154, 0, (onething.Visible and 35 or 5))
+			else
+				onetext.TextXAlignment = Enum.TextXAlignment.Left
+				onetext2.TextXAlignment = Enum.TextXAlignment.Left
+				onetext2.Position = UDim2.new(0, 4, 0, 1)
+				onetext3.TextXAlignment = Enum.TextXAlignment.Left
+				onetext4.TextXAlignment = Enum.TextXAlignment.Left
+				onething.Position = UDim2.new(0, 2, 0, 8)
+				onetext.Position = UDim2.new(0, 6, 0, (onething.Visible and 35 or 5))
+			end
+		end
+	end
+})
+TextGui.CreateToggle({
+	["Name"] = "Render background", 
+	["Function"] = function(callback) 
+		if callback then
+			onething.BackgroundTransparency = 0.5 
+			onething2.BackgroundTransparency = 0.5 
+			onetext.BackgroundTransparency = 0.5 
+		else
+			onething.BackgroundTransparency = 1
+			onething2.BackgroundTransparency = 1
+			onetext.BackgroundTransparency = 1
+		end
+	end
+})
 
-
-GUI.CreateButton("Combat", function() Combat.SetVisible(true) end, function() Combat.SetVisible(false) end)
-GUI.CreateButton("Blatant", function() Blatant.SetVisible(true) end, function() Blatant.SetVisible(false) end)
-GUI.CreateButton("Render", function() Render.SetVisible(true) end, function() Render.SetVisible(false) end)
-GUI.CreateButton("Utility", function() Utility.SetVisible(true) end, function() Utility.SetVisible(false) end)
-GUI.CreateButton("World", function() World.SetVisible(true) end, function() World.SetVisible(false) end)
-GUI.CreateButton("Other", function() Other.SetVisible(true) end, function() Other.SetVisible(false) end)
-GUI.CreateButton("Settings", function() Settings.SetVisible(true) end, function() Settings.SetVisible(false) end)
-GUI.CreateButton("Friends", function() Friends.SetVisible(true) end, function() Friends.SetVisible(false) end)
-GUI.CreateButton("Search", function() Search.SetVisible(true) end, function() Search.SetVisible(false) end)
-Friends.CreateColorSlider("Friends Color", function(val) GuiLibrary["FriendsObject"]["Color"] = val end)
-Friends.CreateToggle("Use color", function() end, function() end)
-Friends.CreateToggle("Use Friends", function() end, function() end)	
-local FriendsTextList = {["RefreshValues"] = function() end}
-FriendsTextList = Friends.CreateTextList("FriendList", "<username>", function(user)
-	table.insert(GuiLibrary["FriendsObject"]["Friends"], user)
-	FriendsTextList["RefreshValues"](GuiLibrary["FriendsObject"]["Friends"])
-	GuiLibrary["SaveFriends"]()
-end, function(num) 
-	table.remove(GuiLibrary["FriendsObject"]["Friends"], num) 
-	FriendsTextList["RefreshValues"](GuiLibrary["FriendsObject"]["Friends"])
-	GuiLibrary["SaveFriends"]()
-end)
-GuiLibrary["FriendsObject"]["MiddleClickFunc"] = function(user)
-	if table.find(GuiLibrary["FriendsObject"]["Friends"], user) == nil then
-		table.insert(GuiLibrary["FriendsObject"]["Friends"], user)
-		FriendsTextList["RefreshValues"](GuiLibrary["FriendsObject"]["Friends"])
-		GuiLibrary["SaveFriends"]()
+local TargetInfo = GuiLibrary.CreateCustomWindow({
+	["Name"] = "Target Info",
+	["Icon"] = "vape/assets/TargetInfoIcon1.png",
+	["IconSize"] = 16
+})
+local targetinfobkg1 = Instance.new("Frame")
+targetinfobkg1.BackgroundColor3 = Color3.fromRGB(26, 25, 26)
+targetinfobkg1.BorderSizePixel = 0
+targetinfobkg1.Size = UDim2.new(0, 220, 0, 72)
+targetinfobkg1.Position = UDim2.new(0, 0, 0, 0)
+targetinfobkg1.Parent = TargetInfo.GetCustomChildren()
+local targetinfobkg2 = targetinfobkg1:Clone()
+targetinfobkg2.ZIndex = 0
+targetinfobkg2.Position = UDim2.new(0, 0, 0, -6)
+targetinfobkg2.Size = UDim2.new(0, 220, 0, 86)
+targetinfobkg2.Parent = targetinfobkg1
+local targetinfobkg3 = Instance.new("Frame")
+targetinfobkg3.BackgroundColor3 = Color3.fromRGB(31, 30, 31)
+targetinfobkg3.Size = UDim2.new(0, 220, 0, 80)
+targetinfobkg3.Position = UDim2.new(0, 0, 0, -5)
+targetinfobkg3.Name = "MainInfo"
+targetinfobkg3.Parent = targetinfobkg1
+local targetname = Instance.new("TextLabel")
+targetname.TextSize = 17
+targetname.Font = Enum.Font.SourceSans
+targetname.TextColor3 = Color3.new(1, 1, 1)
+targetname.Position = UDim2.new(0, 72, 0, 7)
+targetname.TextStrokeTransparency = 0.75
+targetname.BackgroundTransparency = 1
+targetname.Size = UDim2.new(0, 80, 0, 16)
+targetname.TextScaled = true
+targetname.Text = "Target name"
+targetname.ZIndex = 2
+targetname.TextXAlignment = Enum.TextXAlignment.Left
+targetname.TextYAlignment = Enum.TextYAlignment.Top
+targetname.Parent = targetinfobkg3
+local targethealth = Instance.new("TextLabel")
+targethealth.TextColor3 = Color3.fromRGB(95, 94, 95)
+targethealth.Font = Enum.Font.SourceSans
+targethealth.Size = UDim2.new(0, 0, 0, 0)
+targethealth.TextSize = 17
+targethealth.Position = UDim2.new(0, 210, 0, 6)
+targethealth.BackgroundTransparency = 1
+targethealth.Text = '20'..' hp'
+targethealth.TextScaled = false
+targethealth.ZIndex = 2
+targethealth.TextXAlignment = Enum.TextXAlignment.Right
+targethealth.TextYAlignment = Enum.TextYAlignment.Top
+targethealth.Parent = targetinfobkg3
+local targethealthbkg = Instance.new("Frame")
+targethealthbkg.BackgroundColor3 = Color3.fromRGB(43, 42, 43)
+targethealthbkg.Size = UDim2.new(0, 138, 0, 4)
+targethealthbkg.Position = UDim2.new(0, 72, 0, 29)
+targethealthbkg.Parent = targetinfobkg3
+local targethealthgreen = Instance.new("Frame")
+targethealthgreen.BackgroundColor3 = Color3.fromRGB(40, 137, 109)
+targethealthgreen.Size = UDim2.new(1, 0, 0, 4)
+targethealthgreen.ZIndex = 3
+targethealthgreen.Parent = targethealthbkg
+local targethealthorange = Instance.new("Frame")
+targethealthorange.ZIndex = 2
+targethealthorange.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+targethealthorange.Size = UDim2.new(1, 0, 0, 4)
+targethealthorange.Parent = targethealthbkg
+local targetimage = Instance.new("ImageLabel")
+targetimage.Size = UDim2.new(0, 61, 0, 61)
+targetimage.BackgroundTransparency = 1
+targetimage.Image = 'rbxthumb://type=AvatarHeadShot&id='..game:GetService("Players").LocalPlayer.UserId..'&w=420&h=420'
+targetimage.Position = UDim2.new(0, 5, 0, 10)
+targetimage.Parent = targetinfobkg3
+local round1 = Instance.new("UICorner")
+round1.CornerRadius = UDim.new(0, 4)
+round1.Parent = targetinfobkg2
+local round2 = Instance.new("UICorner")
+round2.CornerRadius = UDim.new(0, 4)
+round2.Parent = targetinfobkg3
+local round3 = Instance.new("UICorner")
+round3.CornerRadius = UDim.new(0, 4)
+round3.Parent = targethealthbkg
+local round4 = Instance.new("UICorner")
+round4.CornerRadius = UDim.new(0, 4)
+round4.Parent = targethealthgreen
+local round6 = Instance.new("UICorner")
+round6.CornerRadius = UDim.new(0, 4)
+round6.Parent = targethealthorange
+local round5 = Instance.new("UICorner")
+round5.CornerRadius = UDim.new(0, 4)
+round5.Parent = targetimage
+local oldhealth = 100
+local allowedtween = true
+TargetInfo.GetCustomChildren().Parent:GetPropertyChangedSignal("Size"):connect(function()
+	if TargetInfo.GetCustomChildren().Parent.Size ~= UDim2.new(0, 220, 0, 0) then
+		targetinfobkg3.Position = UDim2.new(0, 0, 0, -5)
+		targetinfobkg2.BackgroundTransparency = 0
+		targetinfobkg1.BackgroundTransparency = 0
 	else
-		table.remove(GuiLibrary["FriendsObject"]["Friends"], table.find(GuiLibrary["FriendsObject"]["Friends"], user)) 
-		FriendsTextList["RefreshValues"](GuiLibrary["FriendsObject"]["Friends"])
-		GuiLibrary["SaveFriends"]()
-	end
-end
-local searchColor = {["Value"] = 0.44}
-local searchModule = {["Enabled"] = false}
-local searchFolder = Instance.new("Folder")
-searchFolder.Name = "SearchFolder"
-searchFolder.Parent = GuiLibrary["MainGui"]
-local function searchFindBoxHandle(part)
-	for i,v in pairs(searchFolder:GetChildren()) do
-		if v.Adornee == part then
-			return v
-		end
-	end
-	return nil
-end
-local searchAdd
-local searchRemove
-local searchRefresh = function()
-	searchFolder:ClearAllChildren()
-	if searchModule["Enabled"] then
-		for i,v in pairs(workspace:GetDescendants()) do
-			if v:IsA("BasePart") and table.find(GuiLibrary["Settings"]["SearchObject"]["List"], v.Name) and searchFindBoxHandle(v) == nil then
-				local boxhandle = Instance.new("BoxHandleAdornment")
-				boxhandle.Name = v.Name
-				boxhandle.AlwaysOnTop = true
-				boxhandle.Color3 = Color3.fromHSV(searchColor["Value"], 1, 1)
-				boxhandle.Adornee = v
-				boxhandle.ZIndex = 10
-				boxhandle.Size = v.Size
-				boxhandle.Transparency = 0.5
-				boxhandle.Parent = searchFolder
-			end
-		end
-	end
-end
-local searchTextList = {["RefreshValues"] = function() end}
-searchColor = Search.CreateColorSlider("new part color", function(val)
-	for i,v in pairs(searchFolder:GetChildren()) do
-		v.Color3 = Color3.fromHSV(val, 1, 1)
+		targetinfobkg3.Position = UDim2.new(0, 0, 0, 40)
+		targetinfobkg2.BackgroundTransparency = 1
+		targetinfobkg1.BackgroundTransparency = 1
 	end
 end)
-searchModule = Search.CreateOptionsButton("Search", function() 
-	searchRefresh()
-	searchAdd = workspace.DescendantAdded:connect(function(v)
-		if v:IsA("BasePart") and table.find(GuiLibrary["Settings"]["SearchObject"]["List"], v.Name) and searchFindBoxHandle(v) == nil then
-			local boxhandle = Instance.new("BoxHandleAdornment")
-			boxhandle.Name = v.Name
-			boxhandle.AlwaysOnTop = true
-			boxhandle.Color3 = Color3.fromHSV(searchColor["Value"], 1, 1)
-			boxhandle.Adornee = v
-			boxhandle.ZIndex = 10
-			boxhandle.Size = v.Size
-			boxhandle.Transparency = 0.5
-			boxhandle.Parent = searchFolder
+shared.VapeTargetInfo = {
+	["UpdateInfo"] = function(tab, targetsize)
+		targetinfobkg3.Visible = (targetsize > 0) or (TargetInfo.GetCustomChildren().Parent.Size ~= UDim2.new(0, 220, 0, 0))
+		for i,v in pairs(tab) do
+			targetimage.Image = 'rbxthumb://type=AvatarHeadShot&id='..v["UserId"]..'&w=420&h=420'
+			targethealthgreen:TweenSize(UDim2.new(v["Health"] / v["MaxHealth"], 0, 0, 4), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.05, true)
+			spawn(function()
+				if allowedtween then
+					if v["Health"] < oldhealth then
+						targethealthorange:TweenSize(UDim2.new(oldhealth / v["MaxHealth"], 0, 0, 4), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.05, true)
+						oldhealth = v["Health"]
+						allowedtween = false
+						wait(0.3)
+						allowedtween = true
+						targethealthorange:TweenSize(UDim2.new(v["Health"] / v["MaxHealth"], 0, 0, 4), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.05, true)
+					else
+						targethealthorange:TweenSize(UDim2.new(v["Health"] / v["MaxHealth"], 0, 0, 4), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.05, true)
+					end
+				end
+			end)
+			targethealth.Text = math.floor(v["Health"]).." hp"
+			targetname.Text = i
 		end
-	end)
-	searchRemove = workspace.DescendantRemoving:connect(function(v)
-		if v:IsA("BasePart") then
-			local boxhandle = searchFindBoxHandle(v)
-			if boxhandle then
-				boxhandle:Remove()
+	end,
+	["Object"] = TargetInfo
+}
+GUI.CreateCustomToggle({
+	["Name"] = "Target Info", 
+	["Icon"] = "vape/assets/TargetInfoIcon2.png", 
+	["Function"] = function(callback) TargetInfo.SetVisible(callback) end,
+	["Priority"] = 1
+})
+
+GUI.CreateDivider2("MODULE SETTINGS")
+GUI.CreateToggle({
+	["Name"] = "Players", 
+	["Function"] = function() end,
+	["Default"] = true
+})
+GUI.CreateToggle({
+	["Name"] = "NPCs", 
+	["Function"] = function() end,
+})
+GUI.CreateToggle({
+	["Name"] = "Ignore naked", 
+	["Function"] = function() end,
+})
+GUI.CreateToggle({
+	["Name"] = "Teams by server", 
+	["Function"] = function() end,
+})
+GUI.CreateToggle({
+	["Name"] = "Teams by color", 
+	["Function"] = function() end,
+	["Default"] = true
+})
+local MiddleClickInput
+GUI.CreateToggle({
+	["Name"] = "MiddleClick friends", 
+	["Function"] = function(callback) 
+		if callback then
+			MiddleClickInput = game:GetService("UserInputService").InputBegan:connect(function(input1)
+				if input1.UserInputType == Enum.UserInputType.MouseButton3 then
+					if mouse.Target.Parent:FindFirstChild("HumanoidRootPart") or mouse.Target.Parent:IsA("Accessory") and mouse.Target.Parent.Parent:FindFirstChild("HumanoidRootPart") then
+						local user = (mouse.Target.Parent:IsA("Accessory") and mouse.Target.Parent.Parent.Name or mouse.Target.Parent.Name)
+						if table.find(FriendsTextList["ObjectList"], user) == nil then
+							table.insert(FriendsTextList["ObjectList"], user)
+							FriendsTextList["RefreshValues"](FriendsTextList["ObjectList"])
+						else
+							table.remove(FriendsTextList["ObjectList"], table.find(FriendsTextList["ObjectList"], user)) 
+							FriendsTextList["RefreshValues"](FriendsTextList["ObjectList"])
+						end
+					end
+				end
+			end)
+		else
+			if MiddleClickInput then
+				MiddleClickInput:Disconnect()
 			end
 		end
-	end)
-end, function() 
+	end
+})
+local blatantmode = GUI.CreateToggle({
+	["Name"] = "Blatant mode",
+	["Function"] = function() end
+})
+GUI.CreateDivider2("GENERAL SETTINGS")
+guicolorslider = GUI.CreateColorSlider("GUI Theme", function(val) GuiLibrary["Settings"]["GUIObject"]["Color"] = val GuiLibrary["UpdateUI"]() end)
+local tabsortorder = {
+	["CombatButton"] = 1,
+	["BlatantButton"] = 2,
+	["RenderButton"] = 3,
+	["UtilityButton"] = 4,
+	["WorldButton"] = 5,
+	["FriendsButton"] = 6,
+	["ProfilesButton"] = 7
+}
+
+local tabcategorycolor = {
+	["CombatWindow"] = Color3.fromRGB(214, 27, 6),
+	["BlatantWindow"] = Color3.fromRGB(219, 21, 133),
+	["RenderWindow"] = Color3.fromRGB(135, 14, 165),
+	["UtilityWindow"] = Color3.fromRGB(27, 145, 68),
+	["WorldWindow"] = Color3.fromRGB(70, 73, 16)
+}
+
+GuiLibrary["UpdateUI"] = function()
 	pcall(function()
-		searchFolder:ClearAllChildren()
-		searchAdd:Disconnect()
-		searchRemove:Disconnect()
-	end)
-end, false)
-SearchTextList = Search.CreateTextList("SearchList", "<part name>", function(user)
-	table.insert(GuiLibrary["Settings"]["SearchObject"]["List"], user)
-	SearchTextList["RefreshValues"](GuiLibrary["Settings"]["SearchObject"]["List"])
-	searchRefresh()
-end, function(num) 
-	table.remove(GuiLibrary["Settings"]["SearchObject"]["List"], num) 
-	SearchTextList["RefreshValues"](GuiLibrary["Settings"]["SearchObject"]["List"])
-	searchRefresh()
-end)
-local XrayAdd
-local Xray = GuiLibrary["ObjectsThatCanBeSaved"]["WorldWindow"]["Api"].CreateOptionsButton("Xray", function() 
-	XrayAdd = workspace.DescendantAdded:connect(function(v)
-		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") and not v.Parent.Parent:FindFirstChild("Humanoid") then
-			v.LocalTransparencyModifier = 0.5
+		GuiLibrary["ObjectsThatCanBeSaved"]["GUIWindow"]["Object"].Children.Extras.MainButton.ImageColor3 = (GUI["GetVisibleIcons"]() > 0 and Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9) or Color3.fromRGB(199, 199, 199))
+		GuiLibrary["ObjectsThatCanBeSaved"]["GUIWindow"]["Object"].Logo1.Logo2.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+		onething.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+		onetext.TextColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+		local newtext = ""
+		local newfirst = false
+		for i2,v2 in pairs(textwithoutthing:split("\n")) do
+			local rainbowsub = 2
+			local rainbowcolor = GuiLibrary["Settings"]["GUIObject"]["Color"] + (GuiLibrary["ObjectsThatCanBeSaved"]["Gui ColorSliderColor"]["Api"]["RainbowValue"] and (-0.015 * i2) or 0)
+			if rainbowcolor < 0 then rainbowsub = 3 rainbowcolor = rainbowcolor * 0.25 end
+			local str = tostring(rainbowcolor)
+			local newcol = tonumber("0"..string.sub(str, rainbowsub, string.len(str)))
+			local newcolor = Color3.fromHSV(newcol, 0.7, 0.9)
+			if TextGuiUseCategoryColor["Enabled"] and GuiLibrary["ObjectsThatCanBeSaved"][v2:gsub(" ", "").."OptionsButton"] and tabcategorycolor[GuiLibrary["ObjectsThatCanBeSaved"][v2:gsub(" ", "").."OptionsButton"]["Object"].Parent.Parent.Name.."Window"] then
+				newcolor = tabcategorycolor[GuiLibrary["ObjectsThatCanBeSaved"][v2:gsub(" ", "").."OptionsButton"]["Object"].Parent.Parent.Name.."Window"]
+			end
+			newtext = newtext..(newfirst and "\n" or " ")..'<font color="rgb('..tostring(math.floor(newcolor.R * 255))..","..tostring(math.floor(newcolor.G * 255))..","..tostring(math.floor(newcolor.B * 255))..')">'..v2..'</font>'
+			newfirst = true
 		end
-	end)
-	for i, v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") and not v.Parent.Parent:FindFirstChild("Humanoid") then
-			v.LocalTransparencyModifier = 0.5
-		end
-	end
-end, function()
-	for i, v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") and not v.Parent.Parent:FindFirstChild("Humanoid") then
-			v.LocalTransparencyModifier = 0
-		end
-	end
-	XrayAdd:Disconnect()
-end, false)
-local TextGUI = GUI.CreateOptionsButton("Text GUI", function() TextGui.SetVisible(true) end, function() TextGui.SetVisible(false) end, true)
-TextGUI.CreateDropdown("Mode", {"Alphabetical", "Random"}, function(val) sortingmethod = val UpdateHud() end)
-TextGUI.CreateToggle("Watermark", function() onething.Visible = true onetext.Position = UDim2.new(0, 0, 0, 35) end, function() onething.Visible = false onetext.Position = UDim2.new(0, 0, 0, 0) end)
-TextGUI.CreateToggle("Shadow", function() onetext2.Visible = true onetext4.Visible = true end, function() onetext2.Visible = false onetext4.Visible = false end)
-TextGUI.CreateToggle("Render background", function() 
-	onething.BackgroundTransparency = 0.5 
-	onething2.BackgroundTransparency = 0.5 
-	onetext.BackgroundTransparency = 0.5 
-end, function() 
-	onething.BackgroundTransparency = 1
-	onething2.BackgroundTransparency = 1
-	onetext.BackgroundTransparency = 1
-end)
-local SelfDestructButton = {["ToggleButton"] = function() end}
-Other.CreateOptionsButton("Anti-AFK", function()
-	local GC = getconnections or get_signal_cons
-	if GC then
-		for i,v in pairs(GC(game.Players.LocalPlayer.Idled)) do
-			if v["Disable"] then
-				v["Disable"](v)
-			elseif v["Disconnect"] then
-				v["Disconnect"](v)
+		onetext.Text = newtext
+		for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
+			if (v["Type"] == "Button" or v["Type"] == "ButtonMain") and v["Api"]["Enabled"] then
+				local rainbowsub = 2
+				local rainbowcolor = GuiLibrary["Settings"]["GUIObject"]["Color"] + (GuiLibrary["ObjectsThatCanBeSaved"]["Gui ColorSliderColor"]["Api"]["RainbowValue"] and (-0.03 * tabsortorder[i]) or 0)
+				if rainbowcolor < 0 then rainbowsub = 3 rainbowcolor = rainbowcolor * 0.25 end
+				local str = tostring(rainbowcolor)
+				local newcol = tonumber("0"..string.sub(str, rainbowsub, string.len(str)))
+				local newcolor = Color3.fromHSV(newcol, 0.7, 0.9)
+				v["Object"].ButtonText.TextColor3 = newcolor
+				if v["Object"]:FindFirstChild("ButtonIcon") then
+					v["Object"].ButtonIcon.ImageColor3 = newcolor
+				end
+			end
+			if v["Type"] == "OptionsButton" or v["Type"] == "TargetButton" then
+				if v["Api"]["Enabled"] then
+					v["Object"].BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+				end
+			end
+			if v["Type"] == "ExtrasButton" then
+				if v["Api"]["Enabled"] then
+					local rainbowsub = 2
+					local rainbowcolor = GuiLibrary["Settings"]["GUIObject"]["Color"] + (GuiLibrary["ObjectsThatCanBeSaved"]["Gui ColorSliderColor"]["Api"]["RainbowValue"] and (-0.03 * 8) or 0)
+					if rainbowcolor < 0 then rainbowsub = 3 rainbowcolor = rainbowcolor * 0.25 end
+					local str = tostring(rainbowcolor)
+					local newcol = tonumber("0"..string.sub(str, rainbowsub, string.len(str)))
+					local newcolor = Color3.fromHSV(newcol, 0.7, 0.9)
+					v["Object"].ImageColor3 = newcolor
+				end
+			end
+			if (v["Type"] == "Toggle" or v["Type"] == "ToggleMain") and v["Api"]["Enabled"] then
+					v["Object"].ToggleFrame1.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+			end
+			if v["Type"] == "Slider" then
+				v["Object"].Slider.FillSlider.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+				v["Object"].Slider.FillSlider.ButtonSlider.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+			end
+			if v["Type"] == "TwoSlider" then
+				v["Object"].Slider.FillSlider.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+				v["Object"].Slider.ButtonSlider.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+				v["Object"].Slider.ButtonSlider2.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
 			end
 		end
+		ProfilesTextList["Object"].AddBoxBKG.AddButton.ImageColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+		for i3, v3 in pairs(ProfilesTextList["ScrollingObject"].ScrollingFrame:GetChildren()) do
+		--	pcall(function()
+				if v3:IsA("TextButton") and v3.ItemText.Text == GuiLibrary["CurrentProfile"] then
+					v3.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+					v3.ImageButton.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 0.7, 0.9)
+					v3.ItemText.TextColor3 = Color3.new(1, 1, 1)
+					v3.ItemText.TextStrokeTransparency = 0.75
+				end
+		--	end)
+		end
+	end)
+end
+
+GUI.CreateToggle({
+	["Name"] = "Auto-load module states", 
+	["Function"] = function() end
+})
+GUI.CreateToggle({
+	["Name"] = "Blur Background", 
+	["Function"] = function(callback) GuiLibrary["MainBlur"].Size = (callback and 25 or 0) end,
+	["Default"] = true
+})
+local rescale = GUI.CreateToggle({
+	["Name"] = "Rescale", 
+	["Function"] = function(callback) 
+		GuiLibrary["MainRescale"].Scale = (callback and math.clamp(cam.ViewportSize.X / 1920, 0.5, 1) or 0.99)
+		wait(0.01)
+		GuiLibrary["MainRescale"].Scale = (callback and math.clamp(cam.ViewportSize.X / 1920, 0.5, 1) or 1)
+	end,
+	["Default"] = true
+})
+cam:GetPropertyChangedSignal("ViewportSize"):connect(function()
+	if rescale["Enabled"] then
+		GuiLibrary["MainRescale"].Scale = math.clamp(cam.ViewportSize.X / 1920, 0.5, 1)
 	end
-end, function() end, false)
-SelfDestructButton = Other.CreateOptionsButton("SelfDestruct", function() 
+end)
+GUI.CreateToggle({
+	["Name"] = "Enable Multi-Keybinding", 
+	["Function"] = function() end
+})
+local welcomemsg = GUI.CreateToggle({
+	["Name"] = "GUI bind indicator", 
+	["Function"] = function() end, 
+	["Default"] = true
+})
+GUI.CreateToggle({
+	["Name"] = "Show Tooltips", 
+	["Function"] = function(callback) GuiLibrary["ToggleTooltips"] = callback end,
+	["Default"] = true
+})
+GUI.CreateToggle({
+	["Name"] = "Discord integration", 
+	["Function"] = function() end
+})
+local ToggleNotifications = {["Object"] = nil}
+local Notifications = {}
+Notifications = GUI.CreateToggle({
+	["Name"] = "Notifications", 
+	["Function"] = function(callback) 
+		GuiLibrary["Notifications"] = callback 
+		if ToggleNotifications["Object"] then
+			ToggleNotifications["Object"].Visible = callback
+			Notifications["Object"].ToggleArrow.Visible = callback
+		end
+	end,
+	["Default"] = true
+})
+ToggleNotifications = GUI.CreateToggle({
+	["Name"] = "Toggle Notifications", 
+	["Function"] = function(callback) GuiLibrary["ToggleNotifications"] = callback end,
+	["Default"] = true
+})
+ToggleNotifications["Object"].BackgroundTransparency = 0
+ToggleNotifications["Object"].BorderSizePixel = 0
+ToggleNotifications["Object"].BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleNotifications["Object"].Visible = Notifications["Enabled"]
+
+local GUIbind = GUI.CreateGUIBind()
+
+local teleportfunc = game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.Started then
+		GuiLibrary["SaveSettings"]()
+        queueteleport('shared.VapeSwitchServers = true wait(1) if shared.VapeDeveloper then loadstring(readfile("vape/NewMainScript.lua"))() else loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))() end')
+    end
+end)
+
+GuiLibrary["SelfDestruct"] = function()
+	GuiLibrary["SelfDestructEvent"]:Fire()
 	selfdestruct = true
-	SelfDestructButton["ToggleButton"](false)
 	GuiLibrary["SaveSettings"]()
-	GuiLibrary["SaveFriends"]()
 	for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
 		if (v["Type"] == "Button" or v["Type"] == "OptionsButton") and v["Api"]["Enabled"] then
 			v["Api"]["ToggleButton"](false)
 		end
 	end
 	shared.VapeExecuted = nil
+	shared.VapeSwitchServers = nil
+	shared.GuiLibrary = nil
 	GuiLibrary["KeyInputHandler"]:Disconnect()
 	GuiLibrary["KeyInputHandler2"]:Disconnect()
+	if MiddleClickInput then
+		MiddleClickInput:Disconnect()
+	end
+	teleportfunc:Disconnect()
 	GuiLibrary["MainGui"]:Remove()
 	GuiLibrary["MainBlur"]:Remove()
-end, function() end, false)
-SelfDestructButton["Bindable"] = false
+end
 
-guicolorslider = Settings.CreateColorSlider("Gui Color", function(val) GuiLibrary["Settings"]["GUIObject"]["Color"] = val GuiLibrary["UpdateUI"]() end)
-GuiLibrary["UpdateUI"] = function()
-	--pcall(function()
-		if not guicolorslider["RainbowValue"] then
-			onething.Gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)), ColorSequenceKeypoint.new(1, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1))})
-			onething2.Gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)), ColorSequenceKeypoint.new(1, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1))})
-			onetext.Gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)), ColorSequenceKeypoint.new(1, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1))})
-		--	onetext2.Gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 0.42)), ColorSequenceKeypoint.new(1, Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 0.42))})
-		end
+GUI.CreateButton2({
+	["Name"] = "RESET CURRENT PROFILE", 
+	["Function"] = function()
+		GuiLibrary["SelfDestruct"]()
+		delfile("vape/Profiles/"..(GuiLibrary["CurrentProfile"] == "default" and "" or GuiLibrary["CurrentProfile"])..game.PlaceId..".vapeprofile")
+		shared.VapeSwitchServers = true
+		shared.VapeOpenGui = true
+		loadstring(GetURL("NewMainScript.lua"))()
+	end
+})
+GUI.CreateButton2({
+	["Name"] = "RESET GUI POSITIONS", 
+	["Function"] = function()
 		for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
-			if v["Type"] == "Button" and v["Api"]["Enabled"] then
-				if guicolorslider["RainbowValue"] then
-					local rainbowsub = 2
-					local rainbowcolor = GuiLibrary["Settings"]["GUIObject"]["Color"] + (-0.015 * v["Object"].LayoutOrder)
-					if rainbowcolor < 0 then rainbowsub = 3 rainbowcolor = rainbowcolor * 0.25 end
-					local str = tostring(rainbowcolor)
-					local newcol = tonumber("0"..string.sub(str, rainbowsub, string.len(str)))
-					v["Object"].BackgroundColor3 = Color3.fromHSV(newcol, 1, 1)
-				else
-					v["Object"].BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)
-				end
-				v["Object"].TextColor3 = Color3.new(0, 0, 0)
+			if (v["Type"] == "Window" or v["Type"] == "CustomWindow") and GuiLibrary["findObjectInTable"](GuiLibrary["ObjectsThatCanBeSaved"], i) then
+				v["Object"].Position = (i == "GUIWindow" and UDim2.new(0, 6, 0, 6) or UDim2.new(0, 223, 0, 6))
 			end
-			if v["Type"] == "OptionsButton" then
-				if v["Api"]["Enabled"] then
-					if guicolorslider["RainbowValue"] then
-						local rainbowsub = 2
-						local rainbowcolor = GuiLibrary["Settings"]["GUIObject"]["Color"] + (-0.015 * v["Object"].LayoutOrder)
-						if rainbowcolor < 0 then rainbowsub = 3 rainbowcolor = rainbowcolor * 0.25 end
-						local str = tostring(rainbowcolor)
-						local newcol = tonumber("0"..string.sub(str, rainbowsub, string.len(str)))
-						v["Object"].BackgroundColor3 = Color3.fromHSV(newcol, 1, 1)
-					else
-						v["Object"].BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)
-					end
-					v["Object"].TextColor3 = Color3.new(0, 0, 0)
-				end
-			end
-			if (v["Type"] == "Toggle" or v["Type"] == "NewToggle") and v["Api"]["Enabled"] then
-				v["Object"].BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)
-			end
-			if v["Type"] == "Slider" then
-				v["Object"].Slider.FillSlider.BackgroundColor3 = Color3.fromHSV(GuiLibrary["Settings"]["GUIObject"]["Color"], 1, 1)
-			end
-		end
---	end)
-end
-
-local playertoggle = Settings.CreateToggle("Players", function() end, function() end)
-local npctoggle = Settings.CreateToggle("NPCs", function() end, function() end)
-local nakedtoggle = Settings.CreateToggle("Ignore naked", function() end, function() end)
-local teamsbyservertoggle = Settings.CreateToggle("Teams by server", function() end, function() end)
-local teamsbycolortoggle = Settings.CreateToggle("Teams by color", function() end, function() end)
-local middleclickfriendstoggle = Settings.CreateToggle("MiddleClick friends", function() GuiLibrary["FriendsObject"]["MiddleClickFriends"] = true end, function() GuiLibrary["FriendsObject"]["MiddleClickFriends"] = false end)
-local blatanttoggle = Settings.CreateToggle("Blatant mode", function()
-	GuiLibrary["Settings"]["GUIObject"]["BlatantMode"] = true
-	for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
-		if v["Type"] == "OptionsButton" and v["Api"]["Blatant"] then
-			v["Object"].TextColor3 = Color3.fromRGB(255, 255, 255)
 		end
 	end
-end, function()
-	GuiLibrary["Settings"]["GUIObject"]["BlatantMode"] = false
-	for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
-		if v["Type"] == "OptionsButton" and v["Api"]["Blatant"] then
-			if v["Api"]["Enabled"] then
-				v["Api"]["ToggleButton"](false, true)
+})
+GUI.CreateButton2({
+	["Name"] = "SORT GUI", 
+	["Function"] = function()
+		local sorttable = {}
+		local movedown = false
+		local sortordertable = {
+			["GUIWindow"] = 1,
+			["CombatWindow"] = 2,
+			["BlatantWindow"] = 3,
+			["RenderWindow"] = 4,
+			["UtilityWindow"] = 5,
+			["WorldWindow"] = 6,
+			["FriendsWindow"] = 7,
+			["ProfilesWindow"] = 8,
+			["Text GUICustomWindow"] = 9,
+			["TargetInfoCustomWindow"] = 10,
+			["RadarCustomWindow"] = 11,
+		}
+		local storedpos = {}
+		local num = 6
+		for i,v in pairs(GuiLibrary["ObjectsThatCanBeSaved"]) do
+			if (v["Type"] == "Window" or v["Type"] == "CustomWindow") and GuiLibrary["findObjectInTable"](GuiLibrary["ObjectsThatCanBeSaved"], i) and v["Object"].Visible then
+				local sortordernum = (sortordertable[i] or #sorttable)
+				sorttable[sortordernum] = v["Object"]
 			end
-			v["Object"].TextColor3 = Color3.fromRGB(128, 128, 128)
+		end
+		for i2,v2 in pairs(sorttable) do
+			if num > 1697 then
+				movedown = true
+				num = 6
+			end
+			v2.Position = UDim2.new(0, num, 0, (movedown and (storedpos[num] and (storedpos[num] + 9) or 400) or 6))
+			if not storedpos[num] then
+				storedpos[num] = v2.AbsoluteSize.Y
+				if v2.Name == "MainWindow" then
+					storedpos[num] = 400
+				end
+			end
+			num = num + 223
 		end
 	end
-end)
+})
+GUI.CreateButton2({
+	["Name"] = "UNINJECT",
+	["Function"] = GuiLibrary["SelfDestruct"]
+})
 
-if isfolder("vape") == false then
-	makefolder("vape")
-end
-if isfolder("vape/CustomModules") == false then
-	makefolder("vape/CustomModules")
-end
-if isfolder("vape/Profiles") == false then
-	makefolder("vape/Profiles")
-end
-
+loadstring(GetURL("AnyGame.vape"))()
 if pcall(function() readfile("vape/CustomModules/"..game.PlaceId..".vape") end) then
 	loadstring(readfile("vape/CustomModules/"..game.PlaceId..".vape"))()
 else
-	loadstring(GetURL("AnyGame.vape"))()
+	local publicrepo = checkpublicrepo(game.PlaceId)
+	if publicrepo then
+		loadstring(publicrepo)()
+	end
 end
 
 GuiLibrary["LoadSettings"]()
-SearchTextList["RefreshValues"](GuiLibrary["Settings"]["SearchObject"]["List"])
-GuiLibrary["LoadFriends"]()
-FriendsTextList["RefreshValues"](GuiLibrary["FriendsObject"]["Friends"])
+if #ProfilesTextList["ObjectList"] == 0 then
+	table.insert(ProfilesTextList["ObjectList"], "default")
+	ProfilesTextList["RefreshValues"](ProfilesTextList["ObjectList"])
+end
+GUIbind["Reload"]()
 GuiLibrary["UpdateUI"]()
-GuiLibrary["LoadedAnimation"]()
+if blatantmode["Enabled"] then
+	pcall(function()
+		local frame = GuiLibrary["CreateNotification"]("Blatant Enabled", "Vape is now in Blatant Mode.", 4, "vape/assets/WarningNotification.png")
+		frame.Frame.BackgroundColor3 = Color3.fromRGB(236, 129, 44)
+		frame.Frame.Frame.BackgroundColor3 = Color3.fromRGB(236, 129, 44)
+	end)
+end
+if not shared.VapeSwitchServers then
+	GuiLibrary["LoadedAnimation"](welcomemsg["Enabled"])
+else
+	shared.VapeSwitchServers = nil
+end
+if shared.VapeOpenGui then
+	GuiLibrary["MainGui"].ClickGui.Visible = true
+	GuiLibrary["MainBlur"].Enabled = true	
+	shared.VapeOpenGui = nil
+end
 
 spawn(function()
 	while wait(10) do
