@@ -1,4 +1,4 @@
-local VERSION = "v4.06 YES"
+local VERSION = "v4.06"
 local rainbowvalue = 0
 local cam = game:GetService("Workspace").CurrentCamera
 local getasset = getsynasset or getcustomasset
