@@ -4,7 +4,7 @@ local function GetURL(scripturl)
 	if shared.VapeDeveloper then
 		return readfile("vape/"..scripturl)
 	else
-		return game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/"..scripturl, true)
+		return game:HttpGet("https://github.com/yesir38/cracked/"..scripturl, true)
 	end
 end
 local getasset = getsynasset or getcustomasset
@@ -17,7 +17,7 @@ local requestfunc = syn and syn.request or http and http.request or http_request
 
 local function checkpublicrepo(id)
 	local req = requestfunc({
-		Url = "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/CustomModules/"..id..".vape",
+		Url = "https://github.com/yesir38/cracked/tree/main/CustomModules/"..id..".vape",
 		Method = "GET"
 	})
 	if req.StatusCode == 200 then
@@ -28,7 +28,7 @@ end
 
 local function checkassetversion()
 	local req = requestfunc({
-		Url = "https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/assetsversion.dat",
+		Url = "https://github.com/yesir38/cracked/blob/main/assetsversion.dat",
 		Method = "GET"
 	})
 	if req.StatusCode == 200 then
